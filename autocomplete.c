@@ -57,6 +57,56 @@ void read_in_terms(term **terms, int *pnterms, char *filename) {
 }
 
 
+int starts_with(const char *term, const char *substr) {
+    return strncmp(term, substr, strlen(substr)) == 0;
+}
+
+int lowest_match(term *terms, int nterms, char *substr) {
+    int left = 0;
+    int right = nterms - 1;
+    int result = -1;  
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        
+        
+        if (starts_with(terms[mid].term, substr)) {
+            result = mid; 
+            right = mid - 1;
+        } else if (strcmp(terms[mid].term, substr) < 0) {
+            left = mid + 1; 
+        } else {
+            right = mid - 1; 
+        }
+    }
+    
+    return result;
+}
+
+int highest_match(term *terms, int nterms, char *substr) {
+    int left = 0;
+    int right = nterms - 1;
+    int result = -1;  
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        
+        
+        if (starts_with(terms[mid].term, substr)) {
+            result = mid; 
+            left = mid + 1;
+        } else if (strcmp(terms[mid].term, substr) < 0) {
+            left = mid + 1; 
+        } else {
+            right = mid - 1; 
+        }
+    }
+    
+    return result;
+}
+
+
+
 int main() {
     term *terms = NULL;
     int num_terms;
