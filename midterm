@@ -1,0 +1,86 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+
+
+void change(int*p){
+    *p = 9;
+
+}
+
+int sum_odd(int*arr, int n){
+
+    int i = 0;
+    int sum = 0;
+
+    while(i<n){
+
+        if(arr[i]%2==1)
+        {
+        sum += arr[i];
+        }
+
+
+    i++;
+
+    }
+    return sum;
+
+}
+
+int compare(const void* a, const void*b){
+    return(*(int*)a- *(int*)b);
+
+
+}
+
+
+
+
+void g(int *arr, int n){
+
+    // Remember to malloc a new array becaue we want to make sure the oroginal array is not changed.
+
+    int* temp = malloc(sizeof(int)*n);
+
+    for(int j=0; j<n; j++){
+        temp[j] = arr[j];
+    }
+
+
+    qsort(temp,n,sizeof(int), compare);
+
+    for(int i =0; i<n; i++){
+
+        
+        if(i==n-1){
+            printf("%i", temp[i]);
+
+        }
+        else{
+
+            printf("%i,", temp[i]);
+        }
+
+    } 
+
+}
+
+
+
+int main(){
+
+    // int a = 5;
+    // change(&a);
+    // printf("%i", a);
+
+    int arr[8] = {9,10,7,1,2,3,4,5};
+
+    int size = sizeof(arr)/sizeof(int);
+
+    g(arr, size);
+
+
+    return 0;
+}
