@@ -109,8 +109,8 @@ int highest_match(term *terms, int nterms, char *substr) {
 int compare(const void *a, const void *b) {
     const term *t1 = (const term *) a;
     const term *t2 = (const term *) b;
-    if (t1->weight < t2->weight) return -1;
-    if (t1->weight > t2->weight) return 1;
+    if (t1->weight > t2->weight) return -1;
+    if (t1->weight < t2->weight) return 1;
     return 0;
 }
 
