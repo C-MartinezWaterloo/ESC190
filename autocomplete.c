@@ -5,9 +5,9 @@
 
 
 int compare_forQSORTterms(const void *a, const void *b) {
-    const term *termA = (const term *)a;
-    const term *termB = (const term *)b;
-    return strcmp(termA->term, termB->term);  
+    const term *Firstterm = (const term *)a;
+    const term *Secondterm = (const term *)b;
+    return strcmp(Firstterm->term, Secondterm->term);  
 }
 
 void read_in_terms(term **terms, int *pnterms, char *filename) {
@@ -106,21 +106,114 @@ int highest_match(term *terms, int nterms, char *substr) {
 }
 
 
+int compare(const void *a, const void *b) {
+    const term *t1 = (const term *) a;
+    const term *t2 = (const term *) b;
+    if (t1->weight < t2->weight) return -1;
+    if (t1->weight > t2->weight) return 1;
+    return 0;
+}
 
-int main() {
-    term *terms = NULL;
-    int num_terms;
-    char *file = "cities.txt";
 
-    read_in_terms(&terms, &num_terms, file);
 
-    if (num_terms > 0) {
-        printf("First term: %lf - %s\n", terms[10].weight, terms[10].term);
-    } else {
-        printf("No terms read.\n");
+void autocomplete(term **answer, int *n_answer, term *terms, int nterms, char *substr) {
+    
+    int low  = lowest_match(terms, nterms, substr);
+    int high = highest_match(terms, nterms, substr);
+
+    
+    if (low == -1 || high == -1 || low > high) {
+
+        *n_answer = 0;
+        *answer   = NULL;
+        return;
     }
 
-    free(terms); 
+  
+    *n_answer = high - low + 1;
+
+
+    *answer = malloc((*n_answer) * sizeof(term));
+    
+
+    for (int i = 0; i < *n_answer; i++) {
+
+
+        (*answer)[i].weight = terms[low + i].weight;
+        strcpy((*answer)[i].term, terms[low + i].term);
+    }
+
+    qsort(*answer, *n_answer, sizeof(term), compare);
+}
+
+
+
+
+// void autocomplete(term **answer, int *n_answer, term *terms, int nterms, char *substr);
+// The function takes terms (assume it is sorted lexicographically in increasing order), the number of
+// terms nterms, and the query string substr, and places the answers in answer, with *n_answer being the
+// number of answers. The answers should be sorted by weight in non-decreasing order.
+// Sorting with qsort
+// See here: https://www.tutorialspoint.com/c_standard_library/c_function_qsort.htm
+// You must use qsort for this question.
+
+
+//Helper function to print an array of terms: */
+// void print_terms(const term *arr, int n) {
+//     for (int i = 0; i < n; i++) {
+//         /* Print index, weight, and the term string */
+//         printf("%2d) weight = %.2f, term = \"%s\"\n", 
+//                i+1, arr[i].weight, arr[i].term);
+//     }
+// }
+
+int main() {
+    // term *terms = NULL;
+    // int nterms = 0;
+
+    // /* 1) Read in terms from "cities.txt" */
+    // read_in_terms(&terms, &nterms, "cities.txt");
+    // if (nterms == 0 || terms == NULL) {
+    //     printf("No terms read from cities.txt or file not found.\n");
+    //     return 1;
+    // }
+    // printf("Successfully read %d terms from cities.txt.\n\n", nterms);
+
+    // /* 2) Let's do some sample queries. 
+    //  *    You can change or add more as you like.
+    //  */
+    // const char *queries[] = {
+    //     "New",
+    //     "Tor",
+    //     "Lo",
+    //     "San",    /* Maybe for "San Francisco" or "San Diego" etc. */
+    //     "xyz"     /* to test no matches scenario */
+    // };
+    // int numQueries = sizeof(queries)/sizeof(queries[0]);
+
+    // /* 3) For each query, call autocomplete and print the result. */
+    // for (int i = 0; i < numQueries; i++) {
+    //     const char *q = queries[i];
+    //     term *answer = NULL;
+    //     int n_answer = 0;
+
+    //     autocomplete(&answer, &n_answer, terms, nterms, (char *)q);
+
+    //     printf("=================================\n");
+    //     printf("Query: \"%s\"\n", q);
+    //     printf("Number of matches = %d\n", n_answer);
+
+    //     if (n_answer > 0) {
+    //         print_terms(answer, n_answer);
+    //         free(answer); /* Remember to free the results array. */
+    //     } else {
+    //         printf("No matches found for \"%s\".\n", q);
+    //     }
+    //     printf("\n");
+    // }
+
+    // /* 4) Finally, free the main terms array. */
+    // free(terms);
 
     return 0;
 }
