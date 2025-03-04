@@ -1,0 +1,90 @@
+#include "queue.h"
+#include <stdlib.h>
+#include <stdio.h>
+
+// Assume queue.h defines Queue as:
+
+void print(Queue* q) {
+    printf("[");
+    for (int i = 0; i < q->size; i++) {
+        int idx = (q->front + i) % q->capacity;
+        if (i != q->size - 1)
+            printf("%d, ", q->data[idx]);
+        else
+            printf("%d", q->data[idx]);
+    }
+    printf("]");
+}
+
+void enqueue(Queue* q, int data) {
+    // If the queue is full, double the capacity
+    if (q->size == q->capacity) {
+        int new_capacity = q->capacity * 2;
+        int* new_data = (int*) malloc(sizeof(int) * new_capacity);
+        // Copy elements in order starting at front
+        for (int i = 0; i < q->size; i++) {
+            new_data[i] = q->data[(q->front + i) % q->capacity];
+        }
+        free(q->data);
+        q->data = new_data;
+        q->capacity = new_capacity;
+        // Reset front and rear since we've copied the data linearly
+        q->front = 0;
+        q->rear = q->size;
+    }
+    // Add the new element at the rear index then update rear (wrap around)
+    q->data[q->rear] = data;
+    q->rear = (q->rear + 1) % q->capacity;
+    q->size++;
+}
+
+int dequeue(Queue* q) {
+    if (q->size == 0) {
+        printf("Queue is empty, cannot dequeue\n");
+        return -1;
+    }
+    // Get the element at the front and update front (wrap around)
+    int val = q->data[q->front];
+    q->front = (q->front + 1) % q->capacity;
+    q->size--;
+    return val;
+}
+
+void destroy_queue(Queue* q) {
+    free(q->data);
+    free(q);
+}
+
+void init(Queue** q) {
+    *q = (Queue*) malloc(sizeof(Queue));
+    (*q)->initial_capacity = 2;   // initial capacity if needed
+    (*q)->capacity = 2;
+    (*q)->data = (int*) malloc((*q)->capacity * sizeof(int));
+    (*q)->size = 0;
+    (*q)->front = 0;
+    (*q)->rear = 0;
+    (*q)->size_inclusive = 0;   // not used in this implementation
+}
+
+int main() {
+    Queue* q;
+    init(&q);
+
+    // Enqueue some numbers
+    enqueue(q, 5);
+    enqueue(q, 3);
+    enqueue(q, 10);
+    enqueue(q, 100);
+
+    // Dequeue one element
+    int removed = dequeue(q);
+    printf("Dequeued: %d\n", removed);
+
+    // Print current state of the queue
+    printf("Queue: ");
+    print(q);
+    printf("\n");
+
+    destroy_queue(q);
+    return 0;
+}
