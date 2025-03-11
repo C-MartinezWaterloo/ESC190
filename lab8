@@ -68,18 +68,38 @@ def function_2(target, values, memo={}):
         return memo[target]
     
     best_count = float('inf')
-    best_combo = []
+    OPT = []
     
     for value in values:
         sub_count, sub_combo = function_2(target - value, values, memo)
-        sub_count += 1  # Since we used one more coin
+        sub_count += 1  # ..since we used one more coin
         
         if sub_count < best_count:
             best_count = sub_count
-            best_combo = [value] + sub_combo
+            OPT = [value] + sub_combo
 
-    memo[target] = (best_count, best_combo)
+    memo[target] = (best_count, OPT)
     return memo[target]
+
+
+
+def can_be_segmented(s: str, word_dict: list):
+    if s in word_dict:
+        return True
+        
+    for word in word_dict:
+        if s.startswith(word):
+            break
+    else:  # word can't be further broken up, so can't be segmented
+        return False
+        
+    for word in word_dict:
+        if s.startswith(word):
+            if can_be_segmented(s[len(word):], word_dict):
+                return True
+
+    return False
+
 
 
 
@@ -120,3 +140,10 @@ if __name__ == '__main__':
     target = 8
     result = function_2(target, denominations)
     print(result)
+
+    s = "pineapplepenapple"
+    word_dict = ["apple", "pen", "pine", "pineapple"]
+
+    result = can_be_segmented(s, word_dict)
+    print(result)  # Expected: True
+
