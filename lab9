@@ -1,0 +1,32 @@
+#include "c_img.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+int min(int x, int y) {
+    return x < y ? x : y;
+}
+
+int main() {
+
+    double brightness_multiplier = 1.1;
+    for (int c = 0; c < 5; c++) {
+        struct rgb_img* image = (struct rgb_img*) malloc(sizeof(struct rgb_img));
+        read_in_img(&image, "image.bin");
+        for (size_t y = 0; y < image->height; y++) {
+            for (size_t x = 0; x < image->width; x++) {
+                uint8_t r = get_pixel(image, y, x, 0), g = get_pixel(image, y, x, 1), b = get_pixel(image, y, x, 2);
+                r = min(255, (int) r * brightness_multiplier);
+                g = min(255, (int) g * brightness_multiplier);
+                b = min(255, (int) b * brightness_multiplier);
+                set_pixel(image, y, x, r, g, b);
+            }
+        }
+        char file_name[256];
+        sprintf(file_name, "cannon_brighter_%d.bin", c);
+        write_img(image, file_name);
+        destroy_image(image);
+        brightness_multiplier += 0.2;
+    }
+
+    return 0;
+}
