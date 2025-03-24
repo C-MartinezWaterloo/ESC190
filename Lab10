@@ -1,0 +1,193 @@
+from notopenai import NotOpenAI
+from collections import deque
+import json
+import linked_list
+
+API_KEY = "AKaFo9brjL7iiAu1yHtg"
+CLIENT = NotOpenAI(api_key=API_KEY)
+
+def get_response(prompt):
+    chat_completion = CLIENT.chat.completions.create(
+        messages=
+        [
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        model="gpt-3.5-turbo", # the GPT model to use
+    )
+    response_str = chat_completion.choices[0].message.content
+
+
+    return response_str
+
+def get_code(prompt):
+    res = get_response(prompt).strip()
+    # res = res[9:-3].strip()
+    return res
+
+def check_result_factorial():
+    prompt = "Write Python code that outputs the factorial of input n. ONLY give me the code, and the code shouldn't print anything, but instead returns the result. Name the function factorial(n). NO docstring please"
+    code = get_code(prompt)
+    print(code)
+    test_cases = [
+        {"input": 3, "expected_output": 6},
+        {"input": 4, "expected_output": 24}
+    ]
+
+    exec(code, globals())
+
+    total_tests, successes = 0, 0
+    for case in test_cases:
+        output = factorial(case["input"])
+        if output == case["expected_output"]:
+            successes += 1
+        total_tests += 1
+    print(f"Passed: {successes}, Total: {total_tests}")
+
+def check_result_csv(): # what the hell is this
+    s = '''Date,Character,Age,HeightCm,AppleCount,MoodRating
+    2025-01-15,Snow White,14,157.5,1,8.5
+    Doc,200,91.4,3,7.2
+    2025-01-16,Grumpy,199,89.0,0,3.4
+    2025-01-16,202,94.0,2,9.7
+    2025-01-17,Sleepy,202,90.2,1,6.3
+    Bashful,198,88.5,1,5.8
+    2025-01-18,Sneezy,197,92.3,2,7.4
+    2025-01-18,Dopey,195,87.1,4,8.9
+    2025-01-19,,42,175.6,0,2.1
+    Prince,25,185.3,2,9.5
+    2025-01-20,Huntsman,38,178.4,1,6.7
+    2025-01-20,250,92.0,3,7.3
+    2025-01-21,Forest Animals,5,30.5,4,9.2'''
+
+    prompt = '''Write Python code to parse a CSV string
+    formatted like the following. Parse it into a list that contains characters, where for each characters, it contains dictionaries of date: this, character: this, and so on. Result needs
+    to be a dictionary of dictionaries, and the function needs to be called parse_csv. Also, ONLY give me the code, and nothing else. NO docstring please. \n\n\n''' + s
+
+    code = get_code(prompt)
+    exec(code, globals())
+    print(code)
+
+    tc = '''Date, Character
+    2025 - 01 - 16, Snow White
+    2025 - 01 - 15, Grumpy
+    '''
+    test_cases = [
+        {
+            "input": '2025-01-15', 
+            "expected_output": 
+            [
+                {"Grumpy": ['2025 - 01 - 15'] }, 
+                {"Snow White": ['2025 - 01 - 16']}
+            ]
+        }
+    ]
+
+    total_tests, successes = 0, 0
+    for case in test_cases:
+        output = parse_csv(case["input"])
+        if output == case["expected_output"]:
+            successes += 1
+        total_tests += 1
+    print(f"Passed: {successes}, Total: {total_tests}")
+
+class Graph:
+
+    def __init__(self, num_nodes):
+        self.nodes = []
+        self.node_names = {}
+        self.node_names_rev = {}
+        self.num_nodes = num_nodes
+        for _ in range(num_nodes):
+            self.nodes.append(linked_list.LinkedList())
+    
+    def add_node(self, name):
+        self.node_names[name] = len(self.nodes)
+        self.node_names_rev[len(self.nodes)] = name
+        self.nodes.append(linked_list.LinkedList())
+        self.num_nodes += 1
+    
+    def is_edge_name(self, name1, name2):
+        return self.is_edge(self.node_names[name1], self.node_names[name2])
+    
+    def is_edge(self, i, j):
+        # self.nodes[i] list of the neighbours of node i
+        return self.nodes[i].contains(j)
+
+    def put_edge(self, i, j): # O(1)
+        self.nodes[i].insert(0, j)
+
+    def put_edge_name(self, name1, name2):
+        self.put_edge(self.node_names[name1], self.node_names[name2])
+
+    def remove_edge(self, i, j): # O(d)
+        self.nodes[i].remove(j)
+    
+    def node_distance_bfs(self, start_node, target_node):
+        start_index = self.node_names[start_node]
+        visited = [False] * self.num_nodes
+        queue = deque([(start_index, 0)])
+
+        while queue:
+            curr, distance = queue.popleft()
+            if not visited[curr]:
+                if self.node_names_rev[curr] == target_node:
+                    return distance
+                visited[curr] = True
+                curr = self.nodes[curr].head
+                while curr:
+                    if not visited[curr.data]:
+                        queue.append((curr.data, distance + 1))
+                    curr = curr.next
+
+    def node_distance_dfs(self, curr, target_node, visited=None):
+        if isinstance(curr, str):
+            curr = (curr, 0)
+        if visited is None:
+            visited = [False] * self.num_nodes
+        
+        if curr[0] == target_node:
+            return curr[1]
+        
+        curr_index = self.node_names[curr[0]]
+        neighbours = self.nodes[curr_index].head
+        visited[curr_index] = True
+
+        while neighbours:
+            if not visited[neighbours.data]:
+                curr_distance = self.node_distance_dfs((self.node_names_rev[neighbours.data], curr[1] + 1), target_node, visited)
+                if curr_distance != -1:
+                    return curr_distance
+            neighbours = neighbours.next
+
+        return -1
+
+def main():
+    # check_result_factorial()
+    # check_result_csv()
+
+    airports = Graph(7)
+    airports.add_node("YYZ")
+    airports.add_node("YVR")
+    airports.add_node("JFK")
+    airports.add_node("YUL")
+    airports.add_node("LAX")
+    airports.add_node("SFO")
+    airports.add_node("YXZ")
+
+    airports.put_edge_name("YVR", "YYZ")
+    airports.put_edge_name("YYZ", "YVR")
+    airports.put_edge_name("YYZ", "JFK")
+    airports.put_edge_name("YYZ", "YUL")
+    airports.put_edge_name("JFK", "LAX")
+    airports.put_edge_name("LAX", "SFO")
+    airports.put_edge_name("YUL", "YXZ")
+
+    print(airports.node_distance_bfs("YVR", "SFO"))
+    print(airports.node_distance_dfs("YVR", "SFO"))
+    print(get_response("What is Praxis and is it?"))
+
+if __name__ == "__main__":
+    main()
