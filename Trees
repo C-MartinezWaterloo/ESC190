@@ -1,0 +1,121 @@
+# Simple set implementation using a list
+class MySet:
+    def __init__(self):
+        self.data = []
+
+    def insert(self, x):
+        if x not in self.data:
+            self.data.append(x)
+
+    def is_in(self, x):
+        return x in self.data
+
+# Insertion: O(n)
+# Search (is_in): O(n)
+
+
+# Node class for a binary search tree
+class Node:
+    def __init__(self, key):
+        self.left = None
+        self.right = None
+        self.val = key  # key is a tuple like (number, "name")
+
+
+def make_tree():
+  root = Node(3)
+  root.left = Node(2)
+  root.right = Node(5)
+  root.left.left = Node(0)
+  root.left.right = Node(2)
+  return root
+
+
+
+
+def make_tree2():
+  root = Node((3, "Alice"))
+  root.left = Node((2, "Bob"))
+  root.right = Node((5, "Charlie"))
+  root.left.left = Node((0, "Dave"))
+  root.left.right = Node((2.5 , "Eve"))
+  return root
+
+
+
+def get_val(key, root):
+
+    if root == None:
+        return None
+
+    if root.val[0] == root:
+        return root.val[1]
+
+    if key > root.val[0]:
+        return get_val(key, root.right)
+
+    else:
+        return get_val(key, root.left)
+
+
+
+def in_tree(root, elem):
+
+    if root is None:
+        return False 
+
+    if root.val == elem:
+        return True
+
+    if elem > root.val:
+        return in_tree(root.right, elem)
+
+    else:
+        return in_tree(root.left, elem)
+
+
+
+class MyDict:
+    def __init__(self):
+        self.data = []
+
+    def insert(self, x, value):
+        if x not in self.data:
+            self.data.append((x,value))
+
+    def is_in(self, x):
+        for y,value in self.data:
+            if y==x:
+                return True
+
+            else:
+                return False
+
+
+    def get(self, x):
+        for y,val in self.data:
+            if y==x:
+                return val
+        return None
+
+
+
+
+
+
+if __name__ == "__main__":
+
+    d = MyDict()
+
+    d.insert("Charlie", 2)
+    d.insert("Thomas", 4)
+    d.insert("Sarah", 5)
+
+    root = make_tree()
+
+    elem = 9
+
+    print(in_tree(root, elem))
+
+
+    
