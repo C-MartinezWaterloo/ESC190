@@ -144,6 +144,39 @@ void recover_path(double *best, int height, int width, int **path){
     }
 }
 
+void remove_seam(struct rgb_img *src, struct rgb_img **dest, int *path)
+{
+    int height = src->height;
+    int width  = src->width;
+
+    // Create new image with one fewer column
+    create_img(dest, height, width - 1);
+
+    // For each row i
+    for (int i = 0; i < height; i++) {
+        int seam_col = path[i];
+
+        // Copy columns up to the seam column
+        for (int j = 0; j < seam_col; j++) {
+            uint8_t r = get_pixel(src, i, j, 0);
+            uint8_t g = get_pixel(src, i, j, 1);
+            uint8_t b = get_pixel(src, i, j, 2);
+            set_pixel(*dest, i, j, r, g, b);
+        }
+
+        // Copy columns after the seam column, shifted left
+        for (int j = seam_col + 1; j < width; j++) {
+            uint8_t r = get_pixel(src, i, j, 0);
+            uint8_t g = get_pixel(src, i, j, 1);
+            uint8_t b = get_pixel(src, i, j, 2);
+            set_pixel(*dest, i, j - 1, r, g, b);
+        }
+    }
+}
+
+
+
+
 
 
 int main() {
@@ -201,6 +234,7 @@ int main() {
 
     return 0;
 }
+
 
 
 
