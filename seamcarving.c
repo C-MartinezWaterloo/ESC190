@@ -51,6 +51,15 @@ double min_val(double a, double b, double c) {
         return c;
 }
 
+int min_val2(int a, int b, int c) {
+    if(a <= b && a <= c)
+        return a;
+    else if(b <= a && b <= c)
+        return b;
+    else
+        return c;
+}
+
 // Compute the cumulative energy (cost) array for seam carving
 void dynamic_seam(struct rgb_img *grad, double **best_arr) {
     int height = grad->height;
@@ -94,13 +103,55 @@ void print_best_arr(double *best_arr, int height, int width) {
         printf("\n");
     }
 }
+void recover_path(double *best, int height, int width, int **path){
+    *path = malloc(sizeof(int) * height);
+    if (!*path) {
+        fprintf(stderr, "Memory allocation failed\n");
+        exit(1);
+    }
+
+    // Step 1: Find the minimum value in the bottom row
+    int min_index = 0;
+    double min_value = best[(height - 1) * width];
+    for (int i = 1; i < width; i++) {
+        double val = best[(height - 1) * width + i];
+        if (val < min_value) {
+            min_value = val;
+            min_index = i;
+        }
+    }
+
+    // Set last row path
+    (*path)[height - 1] = min_index;
+
+    // Step 2: Work upwards from bottom-1 to top
+    for (int j = height - 2; j >= 0; j--) {
+        int prev_idx = (*path)[j + 1];
+        int best_idx = prev_idx;
+        double best_cost = best[j * width + prev_idx];
+
+        if (prev_idx > 0 && best[j * width + prev_idx - 1] < best_cost) {
+    best_idx = prev_idx - 1;
+    best_cost = best[j * width + prev_idx - 1];
+}
+        if (prev_idx < width - 1 && best[j * width + prev_idx + 1] < best_cost) {
+            best_idx = prev_idx + 1;
+            // best_cost updated if needed, though not strictly required afterwards
+}
+
+
+        (*path)[j] = best_idx;
+    }
+}
+
+
 
 int main() {
     struct rgb_img *im;
     struct rgb_img *grad;
 
     printf("Reading image...\n");
-    read_in_img(&im, "image-2.bin");  
+    read_in_img(&im, "6x5.bin");  
 
     printf("Calculating energy...\n");
     calc_energy(im, &grad);
@@ -114,11 +165,42 @@ int main() {
     printf("Printing dynamic seam cost array:\n");
     print_best_arr(best_arr, grad->height, grad->width);
 
-    // Optionally free best_arr and destroy images if needed:
+    // === New code starts here ===
+    int *path = NULL;
+    recover_path(best_arr, grad->height, grad->width, &path);
+
+    printf("Recovered seam path (column indices):\n[");
+    for (int i = 0; i < grad->height; i++) {
+        printf("%d", path[i]);
+        if (i != grad->height - 1)
+            printf(", ");
+    }
+    printf("]\n");
+
+    // Optional: Check if it matches expected output
+    int expected[] = {3, 4, 3, 2, 2};
+    int correct = 1;
+    for (int i = 0; i < grad->height; i++) {
+        if (path[i] != expected[i]) {
+            correct = 0;
+            break;
+        }
+    }
+    if (correct) {
+        printf("Seam path matches expected result ✅\n");
+    } else {
+        printf("Seam path does NOT match expected result ❌\n");
+    }
+
+    free(path);
+    // === New code ends here ===
+
     free(best_arr);
     destroy_image(im);
     destroy_image(grad);
 
     return 0;
 }
+
+
 
